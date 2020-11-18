@@ -49,6 +49,13 @@ Matrix = [
     [3,1,1,2]
 ]
 
+inverseMatrix = [
+    [14,11,13,9],
+    [9,14,11,13],
+    [13,9,14,11],
+    [11,13,9,14]
+]
+
 Rcon = [
 
 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 
@@ -88,13 +95,11 @@ def keyexpansioncore(key):
 
     return sub_key   
    
-
 def keyexpansion(key):
     key2 = []
     for i in range(0,len(key),4):
         key2 += keyexpansioncore(key[i:i+4])
     return key2
-
 
 def AddRoundKey(t,k):
     xored_key = []
@@ -111,6 +116,7 @@ def SubBytes(t):
 def inverse_SubBytes(t):
     sub_bytes = []
     for i in t:
+        print(i)
         sub_bytes.append(inverse_sbox[i])
     return sub_bytes
 
@@ -128,8 +134,6 @@ def ShiftRows(t):
     rotated_key = de_grid_vertical(rotated_key)
     return rotated_key
 
-
-
 def inverse_ShiftRows(t):
     grid = grid_vertical(t)
     rotated_key = [  ]
@@ -144,26 +148,37 @@ def inverse_ShiftRows(t):
     rotated_key = de_grid_vertical(rotated_key)
     return rotated_key
 
-def MM(c):
+def MM(c, matrix):
     output = []
-    for i in Matrix:
+    for i in matrix:
         output.append(i[0]*c[0] + i[1]*c[1] + i[2]*c[2] + i[3]*c[3])
     return output
 
+def MixColumns(t):
+    grid = grid_vertical(t)
+    mixedcolumns = []
+    for i in grid:
+        mixedcolumns.append(MM(i, Matrix))
+    mixedcolumns = de_grid_vertical(mixedcolumns)
+    return mixedcolumns    
 
-#def MixColumns(t):
-
-
-#def inverse_MixColumns(t):
-
+def inverse_MixColumns(t):
+    grid = grid_vertical(t)
+    mixedcolumns = []
+    for i in grid:
+        mixedcolumns.append(MM(i, inverseMatrix))
+    mixedcolumns = de_grid_vertical(mixedcolumns)
+    return mixedcolumns    
 
 def aes_encrypt(plaintext,key):
     cyphertext = AddRoundKey(plaintext,key)
     cyphertext = SubBytes(cyphertext)
     cyphertext = ShiftRows(cyphertext)
+    #cyphertext = MixColumns(cyphertext)
     return cyphertext
 
 def aes_decrypt(cyphertext,key):
+    #cyphertext = inverse_MixColumns(cyphertext)
     cyphertext = inverse_ShiftRows(cyphertext)
     cyphertext = inverse_SubBytes(cyphertext)
     plaintext = AddRoundKey(cyphertext,key)
