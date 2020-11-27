@@ -116,7 +116,6 @@ def SubBytes(t):
 def inverse_SubBytes(t):
     sub_bytes = []
     for i in t:
-        print(i)
         sub_bytes.append(inverse_sbox[i])
     return sub_bytes
 
@@ -148,11 +147,26 @@ def inverse_ShiftRows(t):
     rotated_key = de_grid_vertical(rotated_key)
     return rotated_key
 
-def MM(c, matrix):
+def MM(c, m):
     output = []
-    for i in matrix:
-        output.append(i[0]*c[0] + i[1]*c[1] + i[2]*c[2] + i[3]*c[3])
+    for i in m:
+        output.append(GF(i[0], c[0]) ^ GF(i[1], c[1]) ^ GF(i[2], c[2]) ^ GF(i[3], c[3]))
     return output
+
+def GF(a, b):
+    p = 0
+    for i in range(8):
+        if a == 0 or b == 0:
+            break
+        if b & 0x01 == 0x01:
+            p = p ^ a
+        b = b >> 1
+        carry = a & 0x80
+        a = a << 1
+        a = a & 0xFF
+        if carry == 0x80:
+            a = a ^ 0x1B
+    return p
 
 def MixColumns(t):
     grid = grid_vertical(t)
@@ -160,7 +174,8 @@ def MixColumns(t):
     for i in grid:
         mixedcolumns.append(MM(i, Matrix))
     mixedcolumns = de_grid_vertical(mixedcolumns)
-    return mixedcolumns    
+    return mixedcolumns
+
 
 def inverse_MixColumns(t):
     grid = grid_vertical(t)
@@ -168,17 +183,18 @@ def inverse_MixColumns(t):
     for i in grid:
         mixedcolumns.append(MM(i, inverseMatrix))
     mixedcolumns = de_grid_vertical(mixedcolumns)
-    return mixedcolumns    
+    return mixedcolumns
+
 
 def aes_encrypt(plaintext,key):
     cyphertext = AddRoundKey(plaintext,key)
     cyphertext = SubBytes(cyphertext)
     cyphertext = ShiftRows(cyphertext)
-    #cyphertext = MixColumns(cyphertext)
+    cyphertext = MixColumns(cyphertext)
     return cyphertext
 
 def aes_decrypt(cyphertext,key):
-    #cyphertext = inverse_MixColumns(cyphertext)
+    cyphertext = inverse_MixColumns(cyphertext)
     cyphertext = inverse_ShiftRows(cyphertext)
     cyphertext = inverse_SubBytes(cyphertext)
     plaintext = AddRoundKey(cyphertext,key)
