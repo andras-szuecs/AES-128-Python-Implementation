@@ -95,17 +95,24 @@ def keyexpansioncore(key):
 
     return sub_key   
    
-def keyexpansion(key):
-    key2 = []
+def gen_next_key(key):
+    nextkey = []
     for i in range(0,len(key),4):
-        key2 += keyexpansioncore(key[i:i+4])
-    return key2
+        nextkey += keyexpansioncore(key[i:i+4])
+    return nextkey
 
-def AddRoundKey(t,k):
-    xored_key = []
-    for i in range(len(t)):
-        xored_key.append(int(t[i]) ^ k[i])
-    return xored_key    
+def keyexpansion11(key):
+    keys = [key]
+    for i in range(10):
+        key = gen_next_key(key)
+        keys.append(key)
+    return keys    
+
+def AddRoundKey(text,key):
+    xored_text = []
+    for i in range(len(text)):
+        xored_text.append(int(text[i]) ^ key[i])
+    return xored_text
 
 def SubBytes(t):
     sub_bytes = []
@@ -186,19 +193,33 @@ def inverse_MixColumns(t):
     return mixedcolumns
 
 
-def aes_encrypt(plaintext,key):
-    cyphertext = AddRoundKey(plaintext,key)
-    cyphertext = SubBytes(cyphertext)
+def aes_encrypt_round(plaintext,key):
+    cyphertext = SubBytes(plaintext)
     cyphertext = ShiftRows(cyphertext)
     cyphertext = MixColumns(cyphertext)
+    cyphertext = AddRoundKey(cyphertext,key)
     return cyphertext
 
-def aes_decrypt(cyphertext,key):
+def aes_encrypt(plaintext,key):    
+    keys = keyexpansion11(key)
+    cyphertext = AddRoundKey(plaintext,key)
+    for k in keys[1:-1]:
+        cyphertext = aes_encrypt_round(cyphertext,k)
+    return cyphertext    
+
+def aes_decrypt_round(cyphertext,key):
     cyphertext = inverse_MixColumns(cyphertext)
     cyphertext = inverse_ShiftRows(cyphertext)
     cyphertext = inverse_SubBytes(cyphertext)
     plaintext = AddRoundKey(cyphertext,key)
     return plaintext
+
+def aes_decrypt(cyphertext,key):
+    keys = keyexpansion11(key)
+    cyphertext = AddRoundKey(cyphertext, keys[-2])
+    for k in keys[-3::-1]:
+        cyphertext = aes_decrypt_round(cyphertext,k)
+    return cyphertext
 
 cyphertext = aes_encrypt(plaintext,key)
 
