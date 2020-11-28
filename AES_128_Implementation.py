@@ -200,11 +200,18 @@ def aes_encrypt_round(plaintext,key):
     cyphertext = AddRoundKey(cyphertext,key)
     return cyphertext
 
+def aes_encrypt_round_final(plaintext,key):
+    cyphertext = SubBytes(plaintext)
+    cyphertext = ShiftRows(cyphertext)
+    cyphertext = AddRoundKey(cyphertext,key)
+    return cyphertext
+
 def aes_encrypt(plaintext,key):    
     keys = keyexpansion11(key)
     cyphertext = AddRoundKey(plaintext,key)
     for k in keys[1:-1]:
         cyphertext = aes_encrypt_round(cyphertext,k)
+    cyphertext = aes_encrypt_round_final(cyphertext,keys[-1])   
     return cyphertext    
 
 def aes_decrypt_round(cyphertext,key):
@@ -214,9 +221,16 @@ def aes_decrypt_round(cyphertext,key):
     plaintext = AddRoundKey(cyphertext,key)
     return plaintext
 
+def aes_decrypt_round_first(cyphertext,key):
+    cyphertext = inverse_ShiftRows(cyphertext)
+    cyphertext = inverse_SubBytes(cyphertext)
+    plaintext = AddRoundKey(cyphertext,key)
+    return plaintext
+
 def aes_decrypt(cyphertext,key):
     keys = keyexpansion11(key)
-    cyphertext = AddRoundKey(cyphertext, keys[-2])
+    cyphertext = AddRoundKey(cyphertext, keys[-1])
+    cyphertext = aes_decrypt_round_first(cyphertext,keys[-2])
     for k in keys[-3::-1]:
         cyphertext = aes_decrypt_round(cyphertext,k)
     return cyphertext
