@@ -1,4 +1,5 @@
-
+from constants import sbox
+ 
 key = [61, 20, 224, 15, 10, 78, 29, 58, 245, 44, 85, 182, 255, 36, 120, 204]
 
 def keyexpansioncore(key):
