@@ -1,3 +1,4 @@
 *.pyc
 settings.json
-AES_Notebook.py 
+AES_Notebook.py
+/.idea/
