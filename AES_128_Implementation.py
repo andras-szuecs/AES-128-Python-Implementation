@@ -3,6 +3,8 @@ from rounds import *
 
 
 def aes_encrypt(plaintext, key):
+    """Encrypts a 128 bit plaintext with a 128 bit key to get an output of 128 bit ciphertext. Is the equivalent of
+    the AES in ECB mode, encrypting 1 block """
     keys = keyexpansion11(key)
     cyphertext = AddRoundKey(plaintext, keys[0])
     for i in range(1, 10):
@@ -14,6 +16,8 @@ def aes_encrypt(plaintext, key):
 
 
 def aes_decrypt(cyphertext, key):
+    """Decrypts a 128 bit ciphertext with a 128 bit key to get an output of 128 bit plaintext. Is the equivalent of
+    the AES in ECB mode, decrypting 1 block """
     keys = keyexpansion11(key)
     round_key = keys[10]
     cyphertext = aes_decrypt_round_first(cyphertext, round_key)

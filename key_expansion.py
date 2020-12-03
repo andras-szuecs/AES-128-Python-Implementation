@@ -2,39 +2,16 @@ from constants import sbox, Rcon
 import unittest
 
 
-def keyexpansioncore(key):
-    rotated_key = key[1:] + key[:1]
-    sub_key = []
-    for i in rotated_key:
-        sub_key.append(sbox[i])
-
-    return sub_key
-
-
-def gen_next_key(key):
-    nextkey = []
-    for i in range(0, len(key), 4):
-        nextkey += keyexpansioncore(key[i:i + 4])
-    return nextkey
-
-
-def depricatedkeyexpansion11(key):
-    keys = [key]
-    for i in range(10):
-        key = gen_next_key(key)
-        keys.append(key)
-    return keys
-
-
 def regroup(key):
+    """16 byte key is regrouped into a 4 word key (A word is 4 bytes long)"""
     words = []
     for i in range(0, 16, 4):
         currword = (key[i + 0] << 24) + (key[i + 1] << 16) + (key[i + 2] << 8) + key[i + 3]
         words.append(currword)
     return words
 
-
 def ungroup(words):
+    """The 4 word key is regrouped into a 16 byte key (A word is 4 bytes long)."""
     key = []
     for w in words:
         for byteindex in range(0, 31, 8):
@@ -45,6 +22,7 @@ def ungroup(words):
 
 
 def subword(word):
+    """Lookup table, that uses the Rijndael S-Box. Substitutes element by element."""
     sword = 0
     for i in range(0, 31, 8):
         byteindex = 24 - i
@@ -54,21 +32,24 @@ def subword(word):
     return sword
 
 
-def subword1(word):
-    sword = 0
-    for i in range(0, 31, 8):
-        byte = word & 0xff
-        sword |= sbox[byte] << i
-        word >>= 8
-    return sword
+# def subword1(word):
+#     sword = 0
+#     for i in range(0, 31, 8):
+#         byte = word & 0xff
+#         sword |= sbox[byte] << i
+#         word >>= 8
+#     return sword
 
 
 def rotword(word):
+    """Rotates words, element by element. Similar to ShiftRow function."""
     b0 = word >> 24
     return 0xffffffff & ((word << 8) | b0)
 
 
 def keyexpansion11(key):
+    """Expands the key. N is the number of words in a key, R is the number of rounds(and also the amount of keys we
+    have in the end). The output is a list, with list elements. These lists contain the keys themselves """
     N = 4
     R = 11
     words = regroup(key)
@@ -101,8 +82,8 @@ class TestStringMethods(unittest.TestCase):
     def test_rotword(self):
         self.assertEqual(0x34567812, rotword(0x12345678))
 
-    def test_subword(self):
-        self.assertEqual(subword(0x12345678), subword1(0x12345678))
+    # def test_subword(self):
+    #     self.assertEqual(subword(0x12345678), subword1(0x12345678))
 
     def test_keyexpansion11(self):
         key = [0x54, 0x68, 0x61, 0x74, 0x73, 0x20, 0x6D, 0x79, 0x20, 0x4B, 0x75, 0x6E, 0x67, 0x20, 0x46, 0x75]
