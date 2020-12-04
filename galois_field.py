@@ -1,12 +1,14 @@
 import unittest
 
 def MM(c, m):
+    """Multiplies the elements of 2 matrices, using finite field multiplication"""
     output = []
     for i in m:
         output.append(GF(i[0], c[0]) ^ GF(i[1], c[1]) ^ GF(i[2], c[2]) ^ GF(i[3], c[3]))
     return output
 
 def GF(a, b):
+    """Rijndaels Finite field multiplication (GF(2^8)) for any 2 numbers"""
     p = 0
     for i in range(8):
         if a == 0 or b == 0:
