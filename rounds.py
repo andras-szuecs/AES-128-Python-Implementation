@@ -3,20 +3,36 @@ from galois_field import *
 import unittest
 
 
-def grid_vertical(t):
+def grid_horizontal(t):
+    """transposes grid, changes rows and columns, returns 4 words"""
     grid = []
     for i in range(len(t) // 4):
         grid.append([t[i], t[i + 4 * 1], t[i + 4 * 2], t[i + 4 * 3]])
     return grid
 
 
-def de_grid_vertical(t):
+def de_grid_horizontal(t):
     grid = []
     for i in range(len(t)):
         grid.append(t[0][i])
         grid.append(t[1][i])
         grid.append(t[2][i])
         grid.append(t[3][i])
+    return grid
+
+
+def grid_vertical(t):
+    """turns a list with 16 bytes to a list of 4 words"""
+    grid = []
+    for i in range(0, 16, 4):
+        grid.append(t[i:i + 4])
+    return grid
+
+
+def de_grid_vertical(t):
+    grid = []
+    for i in t:
+        grid += i
     return grid
 
 
@@ -49,7 +65,7 @@ def ShiftRows(text):
     """Reformats the list it was given, by putting it in a 4x4 grid. Then each row is shifted to the left 1 more than
     the previous row. The output is in the original list format, as opposed to the grid format that was used during
     the permutation."""
-    grid = grid_vertical(text)
+    grid = grid_horizontal(text)
     rotated_key = []
     row0 = grid[0]
     row1 = grid[1][1:] + grid[1][:1]
@@ -59,7 +75,7 @@ def ShiftRows(text):
     rotated_key.append(row1)
     rotated_key.append(row2)
     rotated_key.append(row3)
-    rotated_key = de_grid_vertical(rotated_key)
+    rotated_key = de_grid_horizontal(rotated_key)
     return rotated_key
 
 
@@ -67,7 +83,7 @@ def inverse_ShiftRows(text):
     """Reformats the list it was given, by putting it in a 4x4 grid. Then Shifts the rows back to their original
     position, namely each row 1 more to the right than the previous one. The output is in the original list format,
     as opposed to the grid format that was used during the permutation."""
-    grid = grid_vertical(text)
+    grid = grid_horizontal(text)
     rotated_key = []
     row0 = grid[0]
     row1 = grid[1][3:] + grid[1][:3]
@@ -77,7 +93,7 @@ def inverse_ShiftRows(text):
     rotated_key.append(row1)
     rotated_key.append(row2)
     rotated_key.append(row3)
-    rotated_key = de_grid_vertical(rotated_key)
+    rotated_key = de_grid_horizontal(rotated_key)
     return rotated_key
 
 
@@ -103,7 +119,7 @@ def inverse_MixColumns(text):
     return mixed_columns
 
 
-def aes_encrypt_round(plaintext, key):
+def aes_encrypt_round(plaintext, key, round='0'):
     """One standard round of encryption. Takes an input of the plaintext and the key, puts it through the SP-Network
     and returns the ciphertext of the same length as the two inputs."""
     ciphertext = SubBytes(plaintext)
@@ -157,35 +173,65 @@ class TestStringMethods(unittest.TestCase):
     def test_AddRoundKey(self):
         key = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f]
         plaintext = [0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff]
-        keyschedulevalue = [0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xa0, 0xb0, 0xc0, 0xd0, 0xe0,
-                            0xf0]
-        self.assertEqual(keyschedulevalue, AddRoundKey(plaintext, key))
+        keyschedule_value = [0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xa0, 0xb0, 0xc0, 0xd0, 0xe0,
+                             0xf0]
+        self.assertEqual(keyschedule_value, AddRoundKey(plaintext, key))
 
     def test_SubBytes(self):
         input = [0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xa0, 0xb0, 0xc0, 0xd0, 0xe0, 0xf0]
         output = [0x63, 0xca, 0xb7, 0x04, 0x09, 0x53, 0xd0, 0x51, 0xcd, 0x60, 0xe0, 0xe7, 0xba, 0x70, 0xe1, 0x8c]
         self.assertEqual(output, SubBytes(input))
 
+    def test_inverse_SubBytes(self):
+        input = [0x54, 0x11, 0xf4, 0xb5, 0x6b, 0xd9, 0x70, 0xe, 0x96, 0xa0, 0x90, 0x2f, 0xa1, 0xbb, 0x9a, 0xa1]
+        output = [0xfd, 0xe3, 0xba, 0xd2, 0x5, 0xe5, 0xd0, 0xd7, 0x35, 0x47, 0x96, 0x4e, 0xf1, 0xfe, 0x37, 0xf1]
+        self.assertEqual(output, inverse_SubBytes(input))
+
     def test_Shiftrows(self):
         input = [0x63, 0xca, 0xb7, 0x04, 0x09, 0x53, 0xd0, 0x51, 0xcd, 0x60, 0xe0, 0xe7, 0xba, 0x70, 0xe1, 0x8c]
         output = [0x63, 0x53, 0xe0, 0x8c, 0x09, 0x60, 0xe1, 0x04, 0xcd, 0x70, 0xb7, 0x51, 0xba, 0xca, 0xd0, 0xe7]
         self.assertEqual(output, ShiftRows(input))
 
+    def test_inverse_Shiftrows(self):
+        input = [0x54, 0xd9, 0x90, 0xa1, 0x6b, 0xa0, 0x9a, 0xb5, 0x96, 0xbb, 0xf4, 0xe, 0xa1, 0x11, 0x70, 0x2f]
+        output = [0x54, 0x11, 0xf4, 0xb5, 0x6b, 0xd9, 0x70, 0xe, 0x96, 0xa0, 0x90, 0x2f, 0xa1, 0xbb, 0x9a, 0xa1]
+        self.assertEqual(output, inverse_ShiftRows(input))
+
     def test_MixColumns(self):
-        input = [0x63, 0x53, 0xe0, 0x8c, 0x09, 0x60, 0xe1, 0x04, 0xcd, 0x70, 0xb7, 0x51, 0xba, 0xca, 0xd0, 0xe7]
+        input = [0x63, 0x53, 0xe0, 0x8c, 0x9, 0x60, 0xe1, 0x4, 0xcd, 0x70, 0xb7, 0x51, 0xba, 0xca, 0xd0, 0xe7]
         expected_output = [0x5f, 0x72, 0x64, 0x15, 0x57, 0xf5, 0xbc, 0x92, 0xf7, 0xbe, 0x3b, 0x29, 0x1d, 0xb9, 0xf9,
                            0x1a]
-        output = MixColumns(input)
+        self.assertEqual(expected_output, MixColumns(input))
 
-        def printhex(l):
-            print("[", end='')
-            for i in l:
-                print(hex(i), end=', ')
-            print("]")
+    def test_inverse_MixColumns(self):
+        input = [0xe9, 0xf7, 0x4e, 0xec, 0x2, 0x30, 0x20, 0xf6, 0x1b, 0xf2, 0xcc, 0xf2, 0x35, 0x3c, 0x21, 0xc7]
+        expected_output = [0x54, 0xd9, 0x90, 0xa1, 0x6b, 0xa0, 0x9a, 0xb5, 0x96, 0xbb, 0xf4, 0xe, 0xa1, 0x11, 0x70,
+                           0x2f]
+        self.assertEqual(expected_output, inverse_MixColumns(input))
 
-        printhex(output)
-        printhex(expected_output)
-        self.assertEqual(expected_output, output)
+    def test_grid_horizontal(self):
+        plaintext = [0x00, 0x11, 0x22, 0x33,
+                     0x44, 0x55, 0x66, 0x77,
+                     0x88, 0x99, 0xaa, 0xbb,
+                     0xcc, 0xdd, 0xee, 0xff]
+        expected_output = [[0x00, 0x44, 0x88, 0xcc],
+                           [0x11, 0x55, 0x99, 0xdd],
+                           [0x22, 0x66, 0xaa, 0xee],
+                           [0x33, 0x77, 0xbb, 0xff]]
+        self.assertEqual(expected_output, grid_horizontal(plaintext))
+        self.assertEqual(plaintext, de_grid_horizontal(grid_horizontal(plaintext)))
+
+    def test_grid_vertical(self):
+        plaintext = [0x00, 0x11, 0x22, 0x33,
+                     0x44, 0x55, 0x66, 0x77,
+                     0x88, 0x99, 0xaa, 0xbb,
+                     0xcc, 0xdd, 0xee, 0xff]
+        expected_output = [[0x00, 0x11, 0x22, 0x33],
+                           [0x44, 0x55, 0x66, 0x77],
+                           [0x88, 0x99, 0xaa, 0xbb],
+                           [0xcc, 0xdd, 0xee, 0xff]]
+        self.assertEqual(expected_output, grid_vertical(plaintext))
+        self.assertEqual(plaintext, de_grid_vertical(grid_vertical(plaintext)))
 
 
 if __name__ == '__main__':

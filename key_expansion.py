@@ -10,6 +10,7 @@ def regroup(key):
         words.append(currword)
     return words
 
+
 def ungroup(words):
     """The 4 word key is regrouped into a 16 byte key (A word is 4 bytes long)."""
     key = []
@@ -117,7 +118,7 @@ class TestStringMethods(unittest.TestCase):
             [0xd0, 0x14, 0xf9, 0xa8, 0xc9, 0xee, 0x25, 0x89, 0xe1, 0x3f, 0x0c, 0xc8, 0xb6, 0x63, 0x0c, 0xa6]
         ]
 
-        self.assertEqual(keyexpansion11(key),keyexpansion)
+        self.assertEqual(keyexpansion11(key), keyexpansion)
 
 
 if __name__ == '__main__':

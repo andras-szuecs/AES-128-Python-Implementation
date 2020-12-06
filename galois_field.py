@@ -1,11 +1,13 @@
 import unittest
 
+
 def MM(c, m):
     """Multiplies the elements of 2 matrices, using finite field multiplication"""
     output = []
     for i in m:
         output.append(GF(i[0], c[0]) ^ GF(i[1], c[1]) ^ GF(i[2], c[2]) ^ GF(i[3], c[3]))
     return output
+
 
 def GF(a, b):
     """Rijndaels Finite field multiplication (GF(2^8)) for any 2 numbers"""
@@ -23,6 +25,7 @@ def GF(a, b):
             a = a ^ 0x1B
     return p
 
+
 class TestStringMethods(unittest.TestCase):
 
     def test_gf_mul_by_2(self):
@@ -34,12 +37,13 @@ class TestStringMethods(unittest.TestCase):
     def test_mm(self):
         columns = [0xd4, 0xbf, 0x5d, 0x30]
         Matrix = [
-            [2,3,1,1],
-            [1,2,3,1],
-            [1,1,2,3],
-            [3,1,1,2]
+            [2, 3, 1, 1],
+            [1, 2, 3, 1],
+            [1, 1, 2, 3],
+            [3, 1, 1, 2]
         ]
-        self.assertEqual([0x04, 0x66, 0x81, 0xe5], MM(columns,Matrix))
+        self.assertEqual([0x04, 0x66, 0x81, 0xe5], MM(columns, Matrix))
+
 
 if __name__ == '__main__':
     unittest.main()
