@@ -1,15 +1,18 @@
 import unittest
 
 
-def MM(c, m):
-    """Multiplies the elements of 2 matrices, using finite field multiplication"""
+def MatrixMultiply(c, m):
+    """Multiplies the elements of 2 matrices, using finite field
+    multiplication"""
     output = []
     for i in m:
-        output.append(GF(i[0], c[0]) ^ GF(i[1], c[1]) ^ GF(i[2], c[2]) ^ GF(i[3], c[3]))
+        output.append(
+            GFMultiply(i[0], c[0]) ^ GFMultiply(i[1], c[1]) ^ GFMultiply(
+                i[2], c[2]) ^ GFMultiply(i[3], c[3]))
     return output
 
 
-def GF(a, b):
+def GFMultiply(a, b):
     """Rijndaels Finite field multiplication (GF(2^8)) for any 2 numbers"""
     p = 0
     for i in range(8):
@@ -29,10 +32,10 @@ def GF(a, b):
 class TestStringMethods(unittest.TestCase):
 
     def test_gf_mul_by_2(self):
-        self.assertEqual(0xb3, GF(0xd4, 2))
+        self.assertEqual(0xb3, GFMultiply(0xd4, 2))
 
     def test_gf_mul_by_3(self):
-        self.assertEqual(0xda, GF(0xbf, 3))
+        self.assertEqual(0xda, GFMultiply(0xbf, 3))
 
     def test_mm(self):
         columns = [0xd4, 0xbf, 0x5d, 0x30]
@@ -42,7 +45,8 @@ class TestStringMethods(unittest.TestCase):
             [1, 1, 2, 3],
             [3, 1, 1, 2]
         ]
-        self.assertEqual([0x04, 0x66, 0x81, 0xe5], MM(columns, Matrix))
+        self.assertEqual([0x04, 0x66, 0x81, 0xe5],
+                         MatrixMultiply(columns, Matrix))
 
 
 if __name__ == '__main__':
