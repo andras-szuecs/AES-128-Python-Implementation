@@ -33,15 +33,6 @@ def subword(word):
     return sword
 
 
-# def subword1(word):
-#     sword = 0
-#     for i in range(0, 31, 8):
-#         byte = word & 0xff
-#         sword |= sbox[byte] << i
-#         word >>= 8
-#     return sword
-
-
 def rotword(word):
     """Rotates words, element by element. Similar to ShiftRow function."""
     b0 = word >> 24
@@ -83,8 +74,6 @@ class TestStringMethods(unittest.TestCase):
     def test_rotword(self):
         self.assertEqual(0x34567812, rotword(0x12345678))
 
-    # def test_subword(self):
-    #     self.assertEqual(subword(0x12345678), subword1(0x12345678))
 
     def test_keyexpansion11_NIST(self):
         key = [0x54, 0x68, 0x61, 0x74, 0x73, 0x20, 0x6D, 0x79, 0x20, 0x4B, 0x75, 0x6E, 0x67, 0x20, 0x46, 0x75]
