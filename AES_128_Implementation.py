@@ -10,7 +10,7 @@ def aes_encrypt(plaintext, key):
     ciphertext = AddRoundKey(plaintext, keys[0])
     for i in range(1, 10):
         round_key = keys[i]
-        ciphertext = aes_encrypt_round(ciphertext, round_key, str(i))
+        ciphertext = aes_encrypt_round(ciphertext, round_key)
     round_key = keys[10]
     ciphertext = aes_encrypt_round_final(ciphertext, round_key)
     return ciphertext
