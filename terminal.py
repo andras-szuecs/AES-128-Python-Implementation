@@ -32,6 +32,3 @@ with open(args.input, 'br') as input, open(args.output, 'bw') as output:
         if args.decrypt:
             output.write(bytes(aes_decrypt(read_data, hash)))
         read_data = input.read(16)
-
-print(args)
-print(hash)
